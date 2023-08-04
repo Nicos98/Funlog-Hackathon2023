@@ -1,2 +1,2 @@
-# GoFinder-Hackathon2023
+# GoFinder - HSE 2023
 NOI Hackathon Summer Edition 2023

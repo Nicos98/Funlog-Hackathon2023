@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Text, Animated, Button, Linking, Image } from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [titleData, setTitle] = useState([]);
   const [gpsData, setGpsdata] = useState([]);
+  const [selectedTransport, setSelectedTransport] = useState();
 
   const callTourismApi = (searchText, successCallback, errorCallback) => {
     const Http = new XMLHttpRequest();
@@ -108,10 +110,6 @@ const App = () => {
     )
   }
 
-  const backToHome = () => {
-
-  }
-
   const OpenURLButton = ({url, children}) => {
     const handlePress = useCallback(async () => {
       const supported = await Linking.canOpenURL(url);
@@ -123,7 +121,7 @@ const App = () => {
       }
     }, [url]);
 
-    return <Button title={children} onPress={handlePress} />;
+    return <Button title={children} onPress={handlePress} style={{padding: 10,}} />;
   };
   
   return (
@@ -137,6 +135,7 @@ const App = () => {
           <TextInput
             style={styles.input}
             placeholder="Where are we going?"
+            placeholderTextColor="grey"
             value={searchText}
             onChangeText={setSearchText}
           />
@@ -154,7 +153,7 @@ const App = () => {
                 onPress={() => toggleView(item.Id)}
                 style={styles.itemContainer}
               >
-                <Text>{item['Detail.en.Title']}</Text>
+                <Text>{item['Detail.en.Title'] ? item['Detail.en.Title'] : item['AccoDetail.en.Name']}</Text>
               </TouchableOpacity>
             ))
           )}
@@ -164,7 +163,18 @@ const App = () => {
             style={styles.itemContainer}
           >
             <Text>{titleData[0]}</Text>
-            <OpenURLButton url={'http://www.openstreetmap.org/?mlat=' + gpsData[0] + '&mlon=' + gpsData[1] + '#map=20/' + gpsData[0] + '/' + gpsData[1]}>Open Location</OpenURLButton>
+            <Picker
+              selectedValue={selectedTransport}
+              onValueChange={(itemValue, itemIndex) =>
+                setSelectedTransport(itemValue)
+              }>
+              <Picker.Item label="Bike" value="bike" />
+              <Picker.Item label="Car" value="car" />
+              <Picker.Item label="Public transport" value="pubTrans" />
+            </Picker>
+            {selectedTransport === 'bike' && <OpenURLButton style={styles.openUrlButton} url={'http://www.openstreetmap.org/?mlat=' + gpsData[0] + '&mlon=' + gpsData[1] + '#map=15/' + gpsData[0] + '/' + gpsData[1] + '&layers=C'}>Open Location on Bike Map</OpenURLButton>}
+            {selectedTransport === 'car' && <OpenURLButton style={styles.openUrlButton} url={'http://www.openstreetmap.org/?mlat=' + gpsData[0] + '&mlon=' + gpsData[1] + '#map=15/' + gpsData[0] + '/' + gpsData[1]}>Open Location on Map</OpenURLButton>}
+            {selectedTransport === 'pubTrans' && <OpenURLButton style={styles.openUrlButton} url={'http://www.openstreetmap.org/?mlat=' + gpsData[0] + '&mlon=' + gpsData[1] + '#map=15/' + gpsData[0] + '/' + gpsData[1] + '&layers=T'}>Open Location on Public Transport Map</OpenURLButton>}
           </TouchableOpacity>
         </View>}
       </View>
@@ -222,6 +232,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemContainer: {
+    width: '100%',
     marginTop: 5,
     backgroundColor: '#f2f3e9',
     borderRadius: 10,
@@ -232,27 +243,16 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     marginRight: 8,
-    textShadowColor: 'black',
+    height: 30,
+    borderRadius: 10,
+    borderBottomColor: '#f2f3e9',
+    borderBottomWidth: 1,
   },
   loadingText: {
     color: 'white',
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    textAlign: 'center',
-  },
-  details: {
-    fontSize: 16,
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  map: {
-    flex: 1,
   },
   footer: {
     position: 'absolute',
@@ -271,11 +271,17 @@ const styles = StyleSheet.create({
       color: 'gray',
   },
    logo: {
-    alignSelf: 'center',
+     alignSelf: 'center',
     width: '40%',
     height: 55,
     marginBottom: 10,
   },
+  openUrlButton: {
+    backgroundColor: '#0c6c0c',
+    padding: 8,
+    marginLeft: 30,
+    borderRadius: 5,
+  }
 });
 
 export default App;
